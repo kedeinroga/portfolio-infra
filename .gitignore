@@ -1,0 +1,10 @@
+.terraform/
+.terraform-build/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tf.plan
+terraform.tfvars
+*.auto.tfvars
+crash.log
+crash.*.log
