@@ -5,33 +5,16 @@ data "cloudflare_zone" "kedein" {
   name = "kedein.com"
 }
 
-# --- Correo personal (apex) — NUNCA tocar el MX/SPF: cortarlo pierde el correo real. ---
-
-resource "cloudflare_record" "mx_eforward" {
-  for_each = {
-    "eforward1.registrar-servers.com" = 10
-    "eforward2.registrar-servers.com" = 10
-    "eforward3.registrar-servers.com" = 10
-    "eforward4.registrar-servers.com" = 15
-    "eforward5.registrar-servers.com" = 20
-  }
-
-  zone_id  = data.cloudflare_zone.kedein.zone_id
-  name     = "kedein.com"
-  type     = "MX"
-  content  = each.key
-  priority = each.value
-  proxied  = false
-  ttl      = 300
-}
-
-resource "cloudflare_record" "spf_apex" {
-  zone_id = data.cloudflare_zone.kedein.zone_id
-  name    = "kedein.com"
-  type    = "TXT"
-  content = "v=spf1 include:spf.efwd.registrar-servers.com ~all"
-  ttl     = 300
-}
+# --- Correo personal (apex) ---
+#
+# El MX/SPF de reenvío de Namecheap (eforward*) que este Terraform gestionaba se retiró
+# (decisión 2026-09-11): no había ninguna dirección @kedein.com en uso real (confirmado: el panel
+# de Namecheap ya no deja gestionar redirects desde que los nameservers son de Cloudflare, y no
+# hay memoria de haber usado ninguna dirección de ese dominio). El apex pasa a usar Cloudflare
+# Email Routing en su lugar (dashboard → Email Routing → Onboard Domain), que publica y gestiona
+# sus propios MX/SPF/DKIM directamente — por fuera de Terraform, igual que ya se documentó para
+# `finance-inbound.kedein.com` en `finance-infra` (Cloudflare es dueño de esos registros, no
+# Terraform, para no competir con lo que el producto gestiona internamente).
 
 # --- Apex → portfolio (Cloudflare Pages) ---
 
